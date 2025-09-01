@@ -1,0 +1,71 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2025-09-01T12:06:02.709603761+08:00",
+  "ArtifactName": "debian:stretch-slim",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 58555392,
+    "OS": {
+      "Family": "debian",
+      "Name": "9.13",
+      "EOSL": true
+    },
+    "ImageID": "sha256:0e23ec2ce5e621c0e8fa57a53c7781d59d57de8c139a8a351b7236530cd85ec2",
+    "DiffIDs": [
+      "sha256:992f38e1a81cbdf2903fab2603f6076f3bef54262b4b2aa5b196515bac953688"
+    ],
+    "RepoTags": [
+      "debian:stretch-slim"
+    ],
+    "RepoDigests": [
+      "debian@sha256:abaa313c7e1dfe16069a1a42fa254014780f165d4fd084844602edbe29915e70"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "container": "8647711de638addee39d76d818102710d735555e7d44a628ce41402b6f5a7cf3",
+      "created": "2022-06-23T00:22:20.980163745Z",
+      "docker_version": "20.10.12",
+      "history": [
+        {
+          "created": "2022-06-23T00:22:20.694615198Z",
+          "created_by": "/bin/sh -c #(nop) ADD file:cfad5912b6dd7590713979e5a5e231b1b6873200fde725cb7baf75110d7fa138 in / "
+        },
+        {
+          "created": "2022-06-23T00:22:20.980163745Z",
+          "created_by": "/bin/sh -c #(nop)  CMD [\"bash\"]",
+          "empty_layer": true
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:992f38e1a81cbdf2903fab2603f6076f3bef54262b4b2aa5b196515bac953688"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "bash"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Image": "sha256:00a7262b0962a0abcac094e35d731ca87a26ac49ff615c0032ecd8d983d9f90a"
+      }
+    },
+    "Layers": [
+      {
+        "Size": 58555392,
+        "Digest": "sha256:bff3e048017eab8adaed886bad4b3c5c81f7d952b65b056dca8d6dbc198222dd",
+        "DiffID": "sha256:992f38e1a81cbdf2903fab2603f6076f3bef54262b4b2aa5b196515bac953688"
+      }
+    ]
+  },
+  "Results": [
+    {
+      "Target": "debian:stretch-slim (debian 9.13)",
+      "Class": "os-pkgs",
+      "Type": "debian"
+    }
+  ]
+}
