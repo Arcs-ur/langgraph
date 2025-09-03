@@ -32,7 +32,7 @@ def trivy_scanner(image_name: str) -> str:
     """
     sanitized_name = image_name.replace(':', '_').replace('/', '_')
     output_path = os.path.join(WORKSPACE, f'{sanitized_name}_cves.json')
-    command = ['trivy', 'image', '--format', 'json', '--output', output_path, image_name]
+    command = ['/home/intel/cengguang/trivy', 'image', '--format', 'json', '--output', output_path, image_name]
     logging.info(f"Running Trivy scan for {image_name}...")
     logging.info(command)
     try:
