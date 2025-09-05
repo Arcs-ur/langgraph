@@ -38,7 +38,6 @@ llm = ChatOpenAI(
     max_tokens=4096, # Set a reasonable max_tokens
     timeout=120,    # Set a timeout in seconds
     max_retries=2,
-    # IMPORTANT: Replace with your valid ModelScope API Key
     api_key="ms-30184ba8-077f-4abf-a40d-97e8d6fc7cb7", 
     base_url="https://api-inference.modelscope.cn/v1",
 )
@@ -165,8 +164,11 @@ def classify_cves_node(state: MainGraphState) -> dict:
 
 def analyze_single_cve(cve: dict) -> dict:
     cve_id = cve.get('VulnerabilityID')
+    logging.info(f"analysis for {cve_id} begin \n")
     initial_prompt = f"Please analyze the following CVE:\n\n{json.dumps(cve, indent=2, ensure_ascii=False)}"
+    logging.info(f"initial prompt show below: \n {initial_prompt} \n")
     initial_state = {"messages": [HumanMessage(content=initial_prompt)], "reflection_count": 0}
+    logging.info(f"initial state show below: \n {initial_state} \n")
     final_state = expert_team_graph.invoke(initial_state)
     
     final_analysis_msg = None

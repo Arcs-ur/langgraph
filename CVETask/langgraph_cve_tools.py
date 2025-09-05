@@ -187,7 +187,7 @@ def cve_report_generator(classified_cves: dict) -> str:
     
     # Write combined ignore file
     if all_ignores:
-        _write_ignore_file(Path(WORKSPACE, '.trivyignore'), all_ignores, "Combined Ignore Rules")
+        _write_combined_ignore_file(Path(WORKSPACE, '.trivyignore'), all_ignores, "Combined Ignore Rules")
         final_messages.append(f"Generated combined .trivyignore with {len(all_ignores)} rules.")
 
     if not final_messages:
