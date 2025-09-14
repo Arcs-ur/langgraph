@@ -44,33 +44,10 @@ class ReportResponse(BaseModel):
     final_report_message: str
 
 
-
-
-
 from mcp.server.fastmcp import FastMCP
-
-
 
 mcp = FastMCP("test", host="arda-multiarc-001.sh.intel.com", port=10001)
 
-
-
-# @mcp.tool()
-# async def scan_images(target_image:str, base_image:str):
-#     """Step 1: Scans the target and base Docker images."""
-#     try:
-#         # This logic is taken directly from your scan_images_node
-#         with ThreadPoolExecutor() as executor:
-#             future_target = executor.submit(trivy_scanner.invoke, {"image_name": target_image})
-#             future_base = executor.submit(trivy_scanner.invoke, {"image_name": base_image})
-#             target_res, base_res = json.loads(future_target.result()), json.loads(future_base.result())
-
-#         if "error" in target_res or "error" in base_res:
-#             raise HTTPException(status_code=400, detail=f"Image scanning failed. Target: {target_res.get('error')}, Base: {base_res.get('error')}")
-        
-#         return [target_res["output_path"], base_res["output_path"]]
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 @mcp.tool()
 async def scan_images(target_image: str, base_image: str):
     """Step 1: Scans the target and base Docker images and returns the actual scan results."""

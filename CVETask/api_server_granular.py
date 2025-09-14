@@ -7,7 +7,7 @@ from typing import List, Dict
 import json
 # We no longer need the whole workflow, just the node functions and their tools
 from langgraph_cve_tools import trivy_scanner, json_to_csv_converter, cve_classifier, cve_report_generator
-from cve_analyzer_langgraph_final import analyze_single_cve, expert_team_graph
+from cve_tool_analyze import analyze_single_cve, expert_team_graph
 from concurrent.futures import ThreadPoolExecutor
 import logging
 

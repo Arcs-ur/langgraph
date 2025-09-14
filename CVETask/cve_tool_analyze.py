@@ -78,8 +78,6 @@ class AuditorOutput(BaseModel):
 
 auditor_llm = llm.with_structured_output(AuditorOutput)
 
-
-# --- Part 2: Reflection Graph (The Expert Team) ---
 class MessagesState(TypedDict):
     messages: List[BaseMessage]
 
@@ -124,42 +122,6 @@ def expert_team_node(state: ReflectionState):
 
 expert_team_graph = StateGraph(ReflectionState).add_node("analyze_and_reflect", expert_team_node).set_entry_point("analyze_and_reflect").add_conditional_edges("analyze_and_reflect", should_reflect).compile()
 
-
-# --- Part 3: Main Workflow Graph ---
-class MainGraphState(TypedDict):
-    target_image: str
-    base_image: str
-    target_scan_path: str
-    base_scan_path: str
-    type1_cves: List[dict]
-    type2_cves: List[dict]
-    type3_cves: List[dict]
-    expert_analysis_results: List[dict]
-    final_report_message: str
-
-def scan_images_node(state: MainGraphState) -> dict:
-    logging.info("Main Workflow: Phase 1 -> Scanning images...")
-    with ThreadPoolExecutor() as executor:
-        future_target = executor.submit(trivy_scanner.invoke, {"image_name": state["target_image"]})
-        future_base = executor.submit(trivy_scanner.invoke, {"image_name": state["base_image"]})
-        target_res, base_res = json.loads(future_target.result()), json.loads(future_base.result())
-
-    if "error" in target_res or "error" in base_res:
-        raise ValueError(f"Image scanning failed. Target: {target_res.get('error')}, Base: {base_res.get('error')}")
-    return {"target_scan_path": target_res["output_path"], "base_scan_path": base_res["output_path"]}
-
-def classify_cves_node(state: MainGraphState) -> dict:
-    logging.info("Main Workflow: Phase 2 -> Classifying CVEs...")
-    target_csv_res = json.loads(json_to_csv_converter.invoke({"json_file_path": state["target_scan_path"]}))
-    base_csv_res = json.loads(json_to_csv_converter.invoke({"json_file_path": state["base_scan_path"]}))
-    
-    classification_result = cve_classifier.invoke({"target_csv_path": target_csv_res["output_path"], "base_csv_path": base_csv_res["output_path"]})
-    
-    preliminary_report = cve_report_generator.invoke({"classified_cves": {"type1_cves": classification_result["type1_cves"], "type2_cves": classification_result["type2_cves"], "type3_results": []}})
-    logging.info(f"Preliminary report for Type-1/2 CVEs generated: {preliminary_report}")
-    
-    return {"type1_cves": classification_result["type1_cves"], "type2_cves": classification_result["type2_cves"], "type3_cves": classification_result["type3_cves_to_analyze"]}
-
 def analyze_single_cve(cve: dict) -> dict:
     cve_id = cve.get('VulnerabilityID')
     logging.info(f"analysis for {cve_id} begin \n")
@@ -186,53 +148,3 @@ def analyze_single_cve(cve: dict) -> dict:
         except json.JSONDecodeError:
             return {"cve": cve, "analysis": {"error": "Invalid JSON output from analyst."}}
     return {"cve": cve, "analysis": {"error": "Analysis failed to produce valid output."}}
-
-def expert_analysis_node(state: MainGraphState) -> dict:
-    cve_list = state["type3_cves"]
-    logging.info(f"Main Workflow: Phase 3 -> Starting parallel expert analysis for {len(cve_list)} CVEs.")
-    all_results = []
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        all_results = list(executor.map(analyze_single_cve, cve_list))
-    return {"expert_analysis_results": all_results}
-
-def final_report_node(state: MainGraphState) -> dict:
-    logging.info("Main Workflow: Final Phase -> Generating final reports...")
-    final_payload = {"classified_cves": {"type1_cves": state["type1_cves"], "type2_cves": state["type2_cves"], "type3_results": state["type3_cves"]}}
-    report_message = cve_report_generator.invoke(final_payload)
-    return {"final_report_message": report_message}
-
-def should_start_expert_analysis(state: MainGraphState) -> str:
-    if state["type3_cves"]:
-        return "expert_analysis"
-    state["expert_analysis_results"] = []
-    return "final_report"
-
-workflow_builder = StateGraph(MainGraphState)
-workflow_builder.add_node("scan_images", scan_images_node)
-workflow_builder.add_node("classify_cves", classify_cves_node)
-workflow_builder.add_node("expert_analysis", expert_analysis_node)
-workflow_builder.add_node("final_report", final_report_node)
-workflow_builder.set_entry_point("scan_images")
-workflow_builder.add_edge("scan_images", "classify_cves")
-workflow_builder.add_conditional_edges("classify_cves", should_start_expert_analysis, {"expert_analysis": "expert_analysis", "final_report": "final_report"})
-workflow_builder.add_edge("expert_analysis", "final_report")
-workflow_builder.add_edge("final_report", END)
-main_workflow = workflow_builder.compile()
-
-
-# --- Part 4: Execution Entry Point ---
-if __name__ == '__main__':
-    inputs = {
-        "target_image": "nginx:1.14.2-alpine",
-        "base_image": "debian:stretch-slim",
-    }
-    print("🚀 Starting CVE analysis workflow (Final Version - Decoupled Tools)...")
-    
-    for event in main_workflow.stream(inputs, stream_mode="values"):
-        step_name = list(event.keys())[-1]
-        print(f"\n✅ Completed Step: {step_name}")
-        print("="*60)
-    
-    final_state = event
-    print("\n\n🎉 Workflow finished!")
-    print(f"Final Report:\n{final_state.get('final_report_message', 'No report was generated.')}")
